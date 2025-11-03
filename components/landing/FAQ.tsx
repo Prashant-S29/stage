@@ -26,33 +26,27 @@ interface FAQProps {
 const defaultFAQs: FAQItem[] = [
   {
     question: "What is Stage?",
-    answer:
-      "Stage is a canvas editor for creating visual designs. Add images, text, backgrounds, and export in PNG or JPG formats.",
+    answer: "A canvas editor for creating visual designs. Add images, text, and backgrounds, then export your work.",
   },
   {
-    question: "Do I need to create an account?",
-    answer:
-      "Yes, you need to sign up to access the editor. You can create an account with Google. It's free and takes just seconds.",
+    question: "Do I need an account?",
+    answer: "Yes. Sign up with Google to access the editor. It's free and takes seconds.",
   },
   {
-    question: "Is Stage free to use?",
-    answer:
-      "Yes, Stage is free to use. Create unlimited designs and export without restrictions. No credit card required.",
+    question: "Is it free?",
+    answer: "Yes. Create unlimited designs and export without restrictions.",
   },
   {
-    question: "What can I export?",
-    answer:
-      "Export your designs as PNG (with transparency) or JPG. Adjust quality settings for JPG exports to get the perfect file size.",
+    question: "What formats can I export?",
+    answer: "PNG (with transparency) or JPG. Adjust quality settings for JPG exports.",
   },
   {
-    question: "Can I customize the canvas size?",
-    answer:
-      "Yes. Choose from preset sizes for Instagram, Facebook, Twitter, YouTube, or set custom dimensions for any project.",
+    question: "Can I change the canvas size?",
+    answer: "Yes. Choose presets for social media or set custom dimensions.",
   },
   {
-    question: "What image formats can I upload?",
-    answer:
-      "Stage supports PNG, JPG, JPEG, and WEBP formats. Maximum file size is 10MB per image.",
+    question: "What image formats are supported?",
+    answer: "PNG, JPG, JPEG, and WEBP. Max file size is 10MB.",
   },
 ];
 

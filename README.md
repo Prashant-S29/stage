@@ -14,60 +14,37 @@ Stage is a canvas editor that runs in your web browser. Think of it like a simpl
 
 ## Quick Start
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+npm run dev
+```
 
-2. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+Visit [http://localhost:3000](http://localhost:3000)
 
-3. **Open your browser:**
-   Visit [http://localhost:3000](http://localhost:3000)
+## Setup
 
-4. **Set up environment variables:**
-   Create a `.env.local` file with required variables (see Environment Variables section below).
+1. Create `.env.local` with:
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `BETTER_AUTH_SECRET` - Generate with: `openssl rand -base64 32`
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name (optional)
+   - `CLOUDINARY_API_KEY` - Cloudinary API key (optional)
+   - `CLOUDINARY_API_SECRET` - Cloudinary API secret (optional)
+   - `GOOGLE_CLIENT_ID` - Google OAuth ID (optional)
+   - `GOOGLE_CLIENT_SECRET` - Google OAuth secret (optional)
 
-5. **Set up database:**
+2. Run database migrations:
+
    ```bash
    npx prisma migrate dev
    ```
 
-6. **Optional - Set up Cloudinary for image optimization:**
-   See [CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md) for instructions on configuring Cloudinary to optimize all images automatically.
+## Usage
 
-## How to Use
-
-### Main Pages
-- **Landing Page** (`/`) - Marketing page with features, pricing, and FAQ
-- **Editor** (`/home`) - The main canvas editor where you create designs
-
-### In the Editor
-1. **Add Images**: Click "Upload" to add images from your computer
-2. **Add Text**: Click "Text" to add text overlays to your canvas
-3. **Change Background**: Click "Background" to set solid colors, gradients, or background images
-4. **Transform Objects**: Click and drag to move, use corner handles to resize/rotate
-5. **Export**: Click "Export" to download your design as PNG or JPG
-
-## Environment Variables
-
-Create a `.env.local` file in the root directory with the following variables:
-
-### Required
-- `DATABASE_URL` - PostgreSQL connection string
-
-### Required for Cloudinary (Optional but Recommended)
-- `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name
-- `CLOUDINARY_API_KEY` - Cloudinary API key
-- `CLOUDINARY_API_SECRET` - Cloudinary API secret
-- Get these from your [Cloudinary Dashboard](https://cloudinary.com/console)
-
-### Required for Authentication (Better Auth)
-- `BETTER_AUTH_SECRET` - Secret key for encryption (generate with: `openssl rand -base64 32`)
-- `GOOGLE_CLIENT_ID` - Google OAuth client ID (optional, for Google sign-in)
-- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (optional)
+- **Upload**: Add images to your canvas
+- **Text**: Add text overlays
+- **Background**: Set solid colors, gradients, or images
+- **Transform**: Drag to move, resize, or rotate
+- **Export**: Download as PNG or JPG
 
 ## Tech Stack
 
