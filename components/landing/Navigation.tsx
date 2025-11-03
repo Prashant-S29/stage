@@ -67,9 +67,6 @@ export function Navigation({
         <div className="flex items-center gap-3">
           {session?.user ? (
             <>
-              <Link href={ctaHref}>
-                <Button variant="ghost">{ctaLabel}</Button>
-              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full">

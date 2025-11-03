@@ -49,9 +49,9 @@ export function Hero({
               {ctaLabel}
             </Button>
           </Link>
-          <Link href={ctaHref} className="w-full sm:w-auto">
+          <Link href="" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="rounded-lg w-full sm:w-auto border-blue-600 text-blue-600 hover:bg-blue-50 hover:border-blue-700">
-              View Editor
+              View Demo
             </Button>
           </Link>
         </div>
