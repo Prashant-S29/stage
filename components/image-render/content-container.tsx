@@ -13,8 +13,10 @@ export const ContentContainer = ({
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden">
       {imageUrl && (
-        <div className="w-full h-full flex items-center justify-center p-4">
-          <ImageRenderComponent imageUrl={imageUrl} />
+        <div className="w-full h-full flex items-center justify-center p-4 relative">
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageRenderComponent imageUrl={imageUrl} />
+          </div>
         </div>
       )}
       {children}
