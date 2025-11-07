@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: ExportSettings = {
 export function useExport(selectedAspectRatio: string) {
   const [settings, setSettings] = useState<ExportSettings>(DEFAULT_SETTINGS);
   const [isExporting, setIsExporting] = useState(false);
-  const { backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, perspective3D } = useImageStore();
+  const { backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, imageOverlays, perspective3D } = useImageStore();
   const { screenshot } = useEditorStore();
 
   // Load preferences on mount
@@ -108,6 +108,7 @@ export function useExport(selectedAspectRatio: string) {
         backgroundConfig,
         backgroundBorderRadius,
         textOverlays,
+        imageOverlays,
         perspective3D,
         screenshot.src || undefined,
         screenshot.radius,
@@ -165,7 +166,7 @@ export function useExport(selectedAspectRatio: string) {
     } finally {
       setIsExporting(false);
     }
-  }, [selectedAspectRatio, settings, backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, perspective3D, screenshot.src, screenshot.radius]);
+  }, [selectedAspectRatio, settings, backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, imageOverlays, perspective3D, screenshot.src, screenshot.radius]);
 
   const copyImage = useCallback(async (): Promise<void> => {
     setIsExporting(true);
@@ -195,6 +196,7 @@ export function useExport(selectedAspectRatio: string) {
         backgroundConfig,
         backgroundBorderRadius,
         textOverlays,
+        imageOverlays,
         perspective3D,
         screenshot.src || undefined,
         screenshot.radius,
@@ -260,7 +262,7 @@ export function useExport(selectedAspectRatio: string) {
     } finally {
       setIsExporting(false);
     }
-  }, [selectedAspectRatio, settings, backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, perspective3D, screenshot.src, screenshot.radius]);
+  }, [selectedAspectRatio, settings, backgroundConfig, backgroundBorderRadius, backgroundBlur, backgroundNoise, textOverlays, imageOverlays, perspective3D, screenshot.src, screenshot.radius]);
 
   return {
     settings,

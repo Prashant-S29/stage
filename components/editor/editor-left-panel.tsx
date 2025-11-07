@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { TextOverlayControls } from '@/components/text-overlay/text-overlay-controls';
+import { OverlayGallery, OverlayControls } from '@/components/overlays';
 import { StyleTabs } from './style-tabs';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2, Copy } from 'lucide-react';
@@ -66,6 +67,12 @@ export function EditorLeftPanel() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-6">
+            {/* Overlay Gallery */}
+            <OverlayGallery />
+            
+            {/* Image Overlays Section */}
+            <OverlayControls />
+            
             {/* Text Overlays Section */}
             <TextOverlayControls />
             

@@ -31,6 +31,19 @@ export interface TextOverlay {
   textShadow: TextShadow
 }
 
+export interface ImageOverlay {
+  id: string
+  src: string
+  position: { x: number; y: number } // Position in pixels relative to canvas
+  size: number // Size in pixels
+  rotation: number // Rotation in degrees
+  opacity: number
+  flipX: boolean
+  flipY: boolean
+  isVisible: boolean
+  isCustom?: boolean // Whether it's a custom uploaded overlay
+}
+
 export interface ImageBorder {
   enabled: boolean
   width: number
@@ -399,6 +412,7 @@ interface ImageState {
   backgroundBlur: number
   backgroundNoise: number
   textOverlays: TextOverlay[]
+  imageOverlays: ImageOverlay[]
   imageOpacity: number
   imageScale: number
   imageBorder: ImageBorder
@@ -428,6 +442,10 @@ interface ImageState {
   updateTextOverlay: (id: string, updates: Partial<TextOverlay>) => void
   removeTextOverlay: (id: string) => void
   clearTextOverlays: () => void
+  addImageOverlay: (overlay: Omit<ImageOverlay, 'id'>) => void
+  updateImageOverlay: (id: string, updates: Partial<ImageOverlay>) => void
+  removeImageOverlay: (id: string) => void
+  clearImageOverlays: () => void
   setImageOpacity: (opacity: number) => void
   setImageScale: (scale: number) => void
   setImageBorder: (border: ImageBorder | Partial<ImageBorder>) => void
@@ -451,6 +469,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   backgroundBlur: 0,
   backgroundNoise: 0,
   textOverlays: [],
+  imageOverlays: [],
   imageOpacity: 1,
   imageScale: 100,
   imageBorder: {
@@ -485,7 +504,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     set({
       uploadedImageUrl: imageUrl,
       imageName: file.name,
-      imageScale: 90,
+      imageScale: 100,
       backgroundConfig: {
         type: 'image',
         value: 'backgrounds/backgrounds/mac/mac-asset-10',
@@ -625,6 +644,31 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   clearTextOverlays: () => {
     set({ textOverlays: [] })
+  },
+
+  addImageOverlay: (overlay) => {
+    const id = `overlay-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    set((state) => ({
+      imageOverlays: [...state.imageOverlays, { ...overlay, id }],
+    }))
+  },
+
+  updateImageOverlay: (id, updates) => {
+    set((state) => ({
+      imageOverlays: state.imageOverlays.map((overlay) =>
+        overlay.id === id ? { ...overlay, ...updates } : overlay
+      ),
+    }))
+  },
+
+  removeImageOverlay: (id) => {
+    set((state) => ({
+      imageOverlays: state.imageOverlays.filter((overlay) => overlay.id !== id),
+    }))
+  },
+
+  clearImageOverlays: () => {
+    set({ imageOverlays: [] })
   },
 
   setImageOpacity: (opacity: number) => {

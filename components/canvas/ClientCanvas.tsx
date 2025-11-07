@@ -8,6 +8,7 @@ import { generatePattern } from '@/lib/patterns'
 import { useResponsiveCanvasDimensions } from '@/hooks/useAspectRatioDimensions'
 import { getBackgroundCSS } from '@/lib/constants/backgrounds'
 import { TextOverlayRenderer } from '@/components/image-render/text-overlay-renderer'
+import { OverlayRenderer } from '@/components/overlays/overlay-renderer'
 import { generateNoiseTexture } from '@/lib/export/export-utils'
 
 // Global ref to store the Konva stage for export
@@ -376,6 +377,19 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
           }}
         >
           <TextOverlayRenderer />
+        </div>
+
+        {/* Image overlays */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 25,
+            overflow: 'hidden',
+            borderRadius: `${backgroundBorderRadius}px`,
+          }}
+        >
+          <OverlayRenderer />
         </div>
 
         {/* 3D Transformed Image Overlay - Only when 3D transforms are active */}

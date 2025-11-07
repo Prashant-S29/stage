@@ -342,6 +342,7 @@ async function exportBackground(
   backgroundConfig: any,
   borderRadius: number,
   textOverlays: any[],
+  imageOverlays: any[] = [],
   backgroundBlur: number = 0,
   backgroundNoise: number = 0
 ): Promise<HTMLCanvasElement> {
@@ -430,6 +431,57 @@ async function exportBackground(
       
       container.appendChild(textElement);
     });
+
+    // Get actual canvas container dimensions for proper scaling
+    const canvasContainer = document.getElementById('image-render-card');
+    let scaleX = 1;
+    let scaleY = 1;
+    if (canvasContainer) {
+      const canvasRect = canvasContainer.getBoundingClientRect();
+      if (canvasRect.width > 0 && canvasRect.height > 0) {
+        scaleX = width / canvasRect.width;
+        scaleY = height / canvasRect.height;
+      }
+    }
+
+    // Add image overlays
+    for (const overlay of imageOverlays) {
+      if (!overlay.isVisible) continue;
+
+      const overlayImg = new Image();
+      overlayImg.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        overlayImg.onload = () => resolve();
+        overlayImg.onerror = () => reject(new Error('Failed to load overlay image'));
+        overlayImg.src = overlay.src;
+      });
+
+      const overlayElement = document.createElement('div');
+      overlayElement.style.position = 'absolute';
+      overlayElement.style.left = `${overlay.position.x * scaleX * scale}px`;
+      overlayElement.style.top = `${overlay.position.y * scaleY * scale}px`;
+      overlayElement.style.width = `${overlay.size * scaleX * scale}px`;
+      overlayElement.style.height = `${overlay.size * scaleY * scale}px`;
+      overlayElement.style.opacity = overlay.opacity.toString();
+      overlayElement.style.transform = `
+        rotate(${overlay.rotation}deg)
+        scaleX(${overlay.flipX ? -1 : 1})
+        scaleY(${overlay.flipY ? -1 : 1})
+      `;
+      overlayElement.style.transformOrigin = 'center center';
+      overlayElement.style.pointerEvents = 'none';
+      overlayElement.style.overflow = 'hidden';
+
+      const img = document.createElement('img');
+      img.src = overlay.src;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'contain';
+      overlayElement.appendChild(img);
+
+      container.appendChild(overlayElement);
+    }
     
     try {
       // Wait for background image to load if it's an image background
@@ -635,10 +687,61 @@ async function exportBackground(
       textElement.style.textShadow = `${overlay.textShadow.offsetX}px ${overlay.textShadow.offsetY}px ${overlay.textShadow.blur}px ${shadowColor}`;
     }
     
-    container.appendChild(textElement);
-  });
-  
-  try {
+      container.appendChild(textElement);
+    });
+
+    // Get actual canvas container dimensions for proper scaling
+    const canvasContainer = document.getElementById('image-render-card');
+    let scaleX = 1;
+    let scaleY = 1;
+    if (canvasContainer) {
+      const canvasRect = canvasContainer.getBoundingClientRect();
+      if (canvasRect.width > 0 && canvasRect.height > 0) {
+        scaleX = width / canvasRect.width;
+        scaleY = height / canvasRect.height;
+      }
+    }
+
+    // Add image overlays
+    for (const overlay of imageOverlays) {
+      if (!overlay.isVisible) continue;
+
+      const overlayImg = new Image();
+      overlayImg.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        overlayImg.onload = () => resolve();
+        overlayImg.onerror = () => reject(new Error('Failed to load overlay image'));
+        overlayImg.src = overlay.src;
+      });
+
+      const overlayElement = document.createElement('div');
+      overlayElement.style.position = 'absolute';
+      overlayElement.style.left = `${overlay.position.x * scaleX * scale}px`;
+      overlayElement.style.top = `${overlay.position.y * scaleY * scale}px`;
+      overlayElement.style.width = `${overlay.size * scaleX * scale}px`;
+      overlayElement.style.height = `${overlay.size * scaleY * scale}px`;
+      overlayElement.style.opacity = overlay.opacity.toString();
+      overlayElement.style.transform = `
+        rotate(${overlay.rotation}deg)
+        scaleX(${overlay.flipX ? -1 : 1})
+        scaleY(${overlay.flipY ? -1 : 1})
+      `;
+      overlayElement.style.transformOrigin = 'center center';
+      overlayElement.style.pointerEvents = 'none';
+      overlayElement.style.overflow = 'hidden';
+
+      const img = document.createElement('img');
+      img.src = overlay.src;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'contain';
+      overlayElement.appendChild(img);
+
+      container.appendChild(overlayElement);
+    }
+    
+    try {
     // Wait for background image to load if it's an image background
     if (backgroundConfig.type === 'image' && backgroundConfig.value) {
       await new Promise<void>((resolve) => {
@@ -1019,6 +1122,7 @@ export async function exportElement(
   backgroundConfig: any,
   backgroundBorderRadius: number,
   textOverlays: any[] = [],
+  imageOverlays: any[] = [],
   perspective3D?: any,
   imageSrc?: string,
   screenshotRadius?: number,
@@ -1046,6 +1150,7 @@ export async function exportElement(
       backgroundConfig,
       backgroundBorderRadius,
       textOverlays,
+      imageOverlays,
       backgroundBlur,
       backgroundNoise
     );
