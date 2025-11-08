@@ -6,10 +6,40 @@ export const maxDuration = 10
 async function getBrowser() {
   const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV
   
+  // Memory-optimized args for serverless
+  const memoryOptimizedArgs = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-accelerated-2d-canvas',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process',
+    '--disable-gpu',
+    '--disable-software-rasterizer',
+    '--disable-extensions',
+    '--disable-background-networking',
+    '--disable-default-apps',
+    '--disable-sync',
+    '--disable-translate',
+    '--hide-scrollbars',
+    '--metrics-recording-only',
+    '--mute-audio',
+    '--no-default-browser-check',
+    '--safebrowsing-disable-auto-update',
+    '--disable-background-timer-throttling',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-breakpad',
+    '--disable-component-extensions-with-background-pages',
+    '--disable-features=TranslateUI,BlinkGenPropertyTrees',
+    '--disable-ipc-flooding-protection',
+    '--disable-renderer-backgrounding',
+  ]
+  
   if (isProduction) {
     const puppeteerCore = await import('puppeteer-core')
     return await puppeteerCore.default.launch({
-      args: chromium.args,
+      args: [...chromium.args, ...memoryOptimizedArgs],
       defaultViewport: { width: 1920, height: 1080 },
       executablePath: await chromium.executablePath(),
       headless: true,
@@ -18,16 +48,7 @@ async function getBrowser() {
     const puppeteer = await import('puppeteer')
     return await puppeteer.default.launch({
       headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-      ],
+      args: memoryOptimizedArgs,
     })
   }
 }
