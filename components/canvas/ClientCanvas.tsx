@@ -12,6 +12,7 @@ import { getFontCSS } from '@/lib/constants/fonts'
 import { generateNoiseTexture } from '@/lib/export/export-utils'
 import { getCldImageUrl } from '@/lib/cloudinary'
 import { OVERLAY_PUBLIC_IDS } from '@/lib/cloudinary-overlays'
+import { MockupRenderer } from '@/components/mockups/MockupRenderer'
 
 // Global ref to store the Konva stage for export
 let globalKonvaStage: any = null;
@@ -108,9 +109,13 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
     imageOpacity,
     textOverlays,
     imageOverlays,
+    mockups,
     updateTextOverlay,
     updateImageOverlay,
+    updateMockup,
   } = useImageStore()
+
+  const hasMockups = mockups.length > 0 && mockups.some(m => m.isVisible)
 
   const responsiveDimensions = useResponsiveCanvasDimensions()
   const backgroundStyle = getBackgroundCSS(backgroundConfig)
@@ -611,7 +616,8 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
             )}
           </Layer>
 
-          {/* Main Image Layer */}
+          {/* Main Image Layer - Hide when mockups are active */}
+          {!hasMockups && (
           <Layer>
             <Group
               x={canvasW / 2 + screenshot.offsetX}
@@ -912,6 +918,7 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
               />
             </Group>
           </Layer>
+          )}
 
           {/* Text Overlays Layer - Canvas based */}
           <Layer>
@@ -964,6 +971,18 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
                 />
               )
             })}
+          </Layer>
+
+          {/* Mockups Layer - Renders device frames with user image composited */}
+          <Layer>
+            {mockups.map((mockup) => (
+              <MockupRenderer
+                key={mockup.id}
+                mockup={mockup}
+                canvasWidth={canvasW}
+                canvasHeight={canvasH}
+              />
+            ))}
           </Layer>
 
           {/* Image Overlays Layer - Canvas based */}

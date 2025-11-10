@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { TextOverlayControls } from '@/components/text-overlay/text-overlay-controls';
 import { OverlayGallery, OverlayControls } from '@/components/overlays';
+import { MockupGallery, MockupControls } from '@/components/mockups';
 import { StyleTabs } from './style-tabs';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -103,6 +104,12 @@ export function EditorLeftPanel() {
             </TabsContent>
 
             <TabsContent value="stickers" className="m-0 p-4 space-y-6">
+              {/* Mockup Gallery */}
+              <MockupGallery />
+              
+              {/* Mockup Controls */}
+              <MockupControls />
+              
               {/* Overlay Gallery */}
               <OverlayGallery />
               
