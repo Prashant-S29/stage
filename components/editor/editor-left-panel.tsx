@@ -96,6 +96,12 @@ export function EditorLeftPanel() {
             <TabsContent value="image" className="m-0 p-4 space-y-6">
               {/* Style Controls */}
               <StyleTabs />
+              
+              {/* Mockup Gallery */}
+              <MockupGallery />
+              
+              {/* Mockup Controls */}
+              <MockupControls />
             </TabsContent>
 
             <TabsContent value="text" className="m-0 p-4 space-y-6">
@@ -104,12 +110,6 @@ export function EditorLeftPanel() {
             </TabsContent>
 
             <TabsContent value="stickers" className="m-0 p-4 space-y-6">
-              {/* Mockup Gallery */}
-              <MockupGallery />
-              
-              {/* Mockup Controls */}
-              <MockupControls />
-              
               {/* Overlay Gallery */}
               <OverlayGallery />
               
