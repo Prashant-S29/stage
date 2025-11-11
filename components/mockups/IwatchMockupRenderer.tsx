@@ -7,13 +7,13 @@ import { useImageStore } from '@/lib/store'
 import { getMockupDefinition } from '@/lib/constants/mockups'
 import type { Mockup } from '@/types/mockup'
 
-interface MacbookMockupRendererProps {
+interface IwatchMockupRendererProps {
   mockup: Mockup
   canvasWidth: number
   canvasHeight: number
 }
 
-export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
+export function IwatchMockupRenderer({ mockup }: IwatchMockupRendererProps) {
   const { uploadedImageUrl, updateMockup } = useImageStore()
   const definition = getMockupDefinition(mockup.definitionId)
   const [mockupImg, mockupStatus] = useImage(definition?.src || '')
@@ -91,9 +91,15 @@ export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
             const y = screenAreaY
             const w = contentWidth
             const h = contentHeight
-            const r = borderRadius
+            const centerX = x + w / 2
+            const centerY = y + h / 2
+            const radius = Math.min(w, h) / 2
             ctx.beginPath()
-            if (borderRadius > 0) {
+            if (borderRadius > 100) {
+              ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
+              ctx.closePath()
+            } else {
+              const r = borderRadius
               ctx.moveTo(x + r, y)
               ctx.lineTo(x + w - r, y)
               ctx.quadraticCurveTo(x + w, y, x + w, y + r)
@@ -104,8 +110,6 @@ export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
               ctx.lineTo(x, y + r)
               ctx.quadraticCurveTo(x, y, x + r, y)
               ctx.closePath()
-            } else {
-              ctx.rect(x, y, w, h)
             }
             ctx.clip()
           }}
@@ -122,5 +126,4 @@ export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
     </Group>
   )
 }
-
 

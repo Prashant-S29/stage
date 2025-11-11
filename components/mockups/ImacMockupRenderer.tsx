@@ -7,13 +7,13 @@ import { useImageStore } from '@/lib/store'
 import { getMockupDefinition } from '@/lib/constants/mockups'
 import type { Mockup } from '@/types/mockup'
 
-interface MacbookMockupRendererProps {
+interface ImacMockupRendererProps {
   mockup: Mockup
   canvasWidth: number
   canvasHeight: number
 }
 
-export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
+export function ImacMockupRenderer({ mockup }: ImacMockupRendererProps) {
   const { uploadedImageUrl, updateMockup } = useImageStore()
   const definition = getMockupDefinition(mockup.definitionId)
   const [mockupImg, mockupStatus] = useImage(definition?.src || '')
@@ -122,5 +122,4 @@ export function MacbookMockupRenderer({ mockup }: MacbookMockupRendererProps) {
     </Group>
   )
 }
-
 

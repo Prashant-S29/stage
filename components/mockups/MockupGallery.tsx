@@ -6,11 +6,11 @@ import { MOCKUP_DEFINITIONS, getMockupsByType } from '@/lib/constants/mockups'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useResponsiveCanvasDimensions } from '@/hooks/useAspectRatioDimensions'
 import Image from 'next/image'
-import { Smartphone, Laptop } from 'lucide-react'
+import { Smartphone, Laptop, Monitor, Watch } from 'lucide-react'
 
 export function MockupGallery() {
   const { addMockup } = useImageStore()
-  const [activeType, setActiveType] = useState<'iphone' | 'macbook'>('macbook')
+  const [activeType, setActiveType] = useState<'iphone' | 'macbook' | 'imac' | 'iwatch'>('macbook')
   const responsiveDimensions = useResponsiveCanvasDimensions()
 
   const getDefaultPosition = () => {
@@ -25,7 +25,10 @@ export function MockupGallery() {
   const handleAddMockup = (definitionId: string) => {
     const defaultPosition = getDefaultPosition()
     const definition = MOCKUP_DEFINITIONS.find(d => d.id === definitionId)
-    const defaultSize = definition?.type === 'iphone' ? 220 : 600
+    let defaultSize = 600
+    if (definition?.type === 'iphone') defaultSize = 220
+    else if (definition?.type === 'iwatch') defaultSize = 150
+    else if (definition?.type === 'imac') defaultSize = 800
     
     addMockup({
       definitionId,
@@ -40,6 +43,8 @@ export function MockupGallery() {
 
   const macbookMockups = getMockupsByType('macbook')
   const iphoneMockups = getMockupsByType('iphone')
+  const imacMockups = getMockupsByType('imac')
+  const iwatchMockups = getMockupsByType('iwatch')
 
   return (
     <div className="space-y-4">
@@ -50,11 +55,19 @@ export function MockupGallery() {
         </p>
       </div>
 
-      <Tabs value={activeType} onValueChange={(v) => setActiveType(v as 'iphone' | 'macbook')}>
-        <TabsList className="w-full grid grid-cols-2">
+      <Tabs value={activeType} onValueChange={(v) => setActiveType(v as 'iphone' | 'macbook' | 'imac' | 'iwatch')}>
+        <TabsList className="w-full grid grid-cols-4">
           <TabsTrigger value="macbook" className="text-xs">
             <Laptop className="h-3 w-3 mr-1" />
             MacBook
+          </TabsTrigger>
+          <TabsTrigger value="imac" className="text-xs">
+            <Monitor className="h-3 w-3 mr-1" />
+            iMac
+          </TabsTrigger>
+          <TabsTrigger value="iwatch" className="text-xs">
+            <Watch className="h-3 w-3 mr-1" />
+            Watch
           </TabsTrigger>
           <TabsTrigger value="iphone" className="text-xs">
             <Smartphone className="h-3 w-3 mr-1" />
@@ -69,6 +82,54 @@ export function MockupGallery() {
                 key={mockup.id}
                 onClick={() => handleAddMockup(mockup.id)}
                 className="group relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary transition-colors bg-muted"
+              >
+                <Image
+                  src={mockup.src}
+                  alt={mockup.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 200px"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                  <p className="text-xs text-white font-medium truncate">{mockup.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="imac" className="mt-4">
+          <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+            {imacMockups.map((mockup) => (
+              <button
+                key={mockup.id}
+                onClick={() => handleAddMockup(mockup.id)}
+                className="group relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary transition-colors bg-muted"
+              >
+                <Image
+                  src={mockup.src}
+                  alt={mockup.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 200px"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                  <p className="text-xs text-white font-medium truncate">{mockup.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="iwatch" className="mt-4">
+          <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+            {iwatchMockups.map((mockup) => (
+              <button
+                key={mockup.id}
+                onClick={() => handleAddMockup(mockup.id)}
+                className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition-colors bg-muted"
               >
                 <Image
                   src={mockup.src}

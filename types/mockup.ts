@@ -1,4 +1,4 @@
-export type MockupType = 'iphone' | 'macbook'
+export type MockupType = 'iphone' | 'macbook' | 'imac' | 'iwatch'
 
 export interface MockupScreenArea {
   x: number
