@@ -1,72 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
-import chromium from '@sparticuz/chromium'
 import { getCachedScreenshot, cacheScreenshot, normalizeUrl, invalidateCache } from '@/lib/screenshot-cache'
 import { checkRateLimit } from '@/lib/rate-limit'
 
-export const maxDuration = 10
+export const maxDuration = 60
 
-async function getBrowser() {
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV
-  
-  // Memory-optimized args for serverless
-  const memoryOptimizedArgs = [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-accelerated-2d-canvas',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
-    '--disable-gpu',
-    '--disable-software-rasterizer',
-    '--disable-extensions',
-    '--disable-background-networking',
-    '--disable-default-apps',
-    '--disable-sync',
-    '--disable-translate',
-    '--hide-scrollbars',
-    '--metrics-recording-only',
-    '--mute-audio',
-    '--no-default-browser-check',
-    '--safebrowsing-disable-auto-update',
-    '--disable-background-timer-throttling',
-    '--disable-backgrounding-occluded-windows',
-    '--disable-breakpad',
-    '--disable-component-extensions-with-background-pages',
-    '--disable-features=TranslateUI,BlinkGenPropertyTrees',
-    '--disable-ipc-flooding-protection',
-    '--disable-renderer-backgrounding',
-  ]
-  
-  if (isProduction) {
-    const puppeteerCore = await import('puppeteer-core')
-    try {
-      return await puppeteerCore.default.launch({
-        args: [...chromium.args, ...memoryOptimizedArgs],
-        defaultViewport: { width: 1920, height: 1080 },
-        executablePath: await chromium.executablePath(),
-        headless: true,
-      })
-    } catch (error) {
-      console.error('Failed to launch browser with chromium, trying without executable path:', error)
-      return await puppeteerCore.default.launch({
-        args: [...chromium.args, ...memoryOptimizedArgs],
-        defaultViewport: { width: 1920, height: 1080 },
-        headless: true,
-      })
-    }
-  } else {
-    const puppeteer = await import('puppeteer')
-    return await puppeteer.default.launch({
-      headless: true,
-      args: memoryOptimizedArgs,
+const SCREENSHOT_SERVICE_URL = process.env.SCREENSHOT_SERVICE_URL || 'http://localhost:3001'
+
+async function captureViaService(url: string): Promise<{ screenshot: string; strategy: string }> {
+  try {
+    const response = await fetch(`${SCREENSHOT_SERVICE_URL}/screenshot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        url,
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      }),
+      signal: AbortSignal.timeout(55000),
     })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error', type: 'unknown' }))
+      
+      if (errorData.type === 'timeout') {
+        throw new Error('timeout')
+      }
+      if (errorData.type === 'connection_error') {
+        throw new Error('connection_error')
+      }
+      if (errorData.type === 'ssl_error') {
+        throw new Error('ssl_error')
+      }
+      
+      throw new Error(errorData.error || `Service returned ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Screenshot capture failed')
+    }
+    
+    return {
+      screenshot: data.screenshot,
+      strategy: data.strategy || 'external-service',
+    }
+  } catch (error) {
+    console.error('Screenshot service error:', error)
+    throw error
   }
 }
 
 export async function POST(request: NextRequest) {
-  let browser = null
-  
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rateLimit = checkRateLimit(ip)
@@ -121,7 +110,7 @@ export async function POST(request: NextRequest) {
       try {
         await invalidateCache(normalizedUrl)
       } catch (invalidateError) {
-        console.warn('Failed to invalidate cache, proceeding with screenshot:', invalidateError)
+        console.warn('Failed to invalidate cache:', invalidateError)
       }
     }
 
@@ -136,49 +125,11 @@ export async function POST(request: NextRequest) {
           })
         }
       } catch (cacheError) {
-        console.warn('Cache check failed, proceeding with screenshot:', cacheError)
+        console.warn('Cache check failed:', cacheError)
       }
     }
 
-    browser = await getBrowser()
-    const page = await browser.newPage()
-
-    await page.setViewport({
-      width: 1920,
-      height: 1080,
-      deviceScaleFactor: 1,
-    })
-
-    await page.setDefaultNavigationTimeout(30000)
-    await page.setDefaultTimeout(30000)
-
-    try {
-      await page.goto(normalizedUrl, {
-        waitUntil: 'networkidle2',
-        timeout: 30000,
-      })
-    } catch (navError) {
-      console.warn('Navigation with networkidle2 failed, trying load:', navError)
-      await page.goto(normalizedUrl, {
-        waitUntil: 'load',
-        timeout: 30000,
-      })
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const screenshot = await page.screenshot({
-      type: 'png',
-      encoding: 'base64',
-      fullPage: false,
-    }) as string
-
-    if (!screenshot || screenshot.length === 0) {
-      throw new Error('Screenshot capture returned empty result')
-    }
-
-    await browser.close()
-    browser = null
+    const { screenshot, strategy } = await captureViaService(normalizedUrl)
 
     try {
       await cacheScreenshot(normalizedUrl, screenshot)
@@ -190,43 +141,48 @@ export async function POST(request: NextRequest) {
       screenshot,
       url: normalizedUrl,
       cached: false,
+      strategy,
     })
   } catch (error) {
-    if (browser) {
-      try {
-        await browser.close()
-      } catch (closeError) {
-        console.error('Error closing browser:', closeError)
-      }
-    }
-
     console.error('Screenshot error:', error)
 
     if (error instanceof Error) {
-      if (error.message.includes('timeout') || error.message.includes('Navigation timeout')) {
+      if (error.message.includes('timeout') || error.message.includes('Timeout')) {
         return NextResponse.json(
-          { error: 'Screenshot request timed out. Please try again.' },
+          { error: 'Website took too long to load. Please try again or try a different URL.' },
           { status: 408 }
         )
       }
 
-      if (error.message.includes('net::ERR_NAME_NOT_RESOLVED') || error.message.includes('net::ERR_CONNECTION_REFUSED')) {
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('fetch failed')) {
         return NextResponse.json(
-          { error: 'Failed to connect to the website. Please check the URL and try again.' },
+          { error: 'Screenshot service is unavailable. Please try again later.' },
+          { status: 503 }
+        )
+      }
+
+      if (error.message.includes('net::ERR_NAME_NOT_RESOLVED') || 
+          error.message.includes('net::ERR_CONNECTION_REFUSED') ||
+          error.message.includes('net::ERR_CONNECTION_TIMED_OUT') ||
+          error.message.includes('NS_ERROR_UNKNOWN_HOST')) {
+        return NextResponse.json(
+          { error: 'Could not connect to the website. Please check the URL and try again.' },
           { status: 400 }
         )
       }
 
-      if (error.message.includes('detached') || error.message.includes('LifecycleWatcher disposed')) {
+      if (error.message.includes('SSL') || 
+          error.message.includes('certificate') ||
+          error.message.includes('ERR_CERT')) {
         return NextResponse.json(
-          { error: 'Screenshot capture was interrupted. Please try again.' },
-          { status: 500 }
+          { error: 'Website has SSL certificate issues. The screenshot may be incomplete.' },
+          { status: 400 }
         )
       }
     }
 
     return NextResponse.json(
-      { error: 'Failed to capture screenshot. Please try again.' },
+      { error: 'Failed to capture screenshot. Please try again or contact support if the issue persists.' },
       { status: 500 }
     )
   }
