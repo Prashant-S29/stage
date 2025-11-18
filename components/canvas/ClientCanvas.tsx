@@ -562,6 +562,10 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
         {has3DTransform && (
           <div
             data-3d-overlay="true"
+            data-untransformed-x={imageX}
+            data-untransformed-y={imageY}
+            data-untransformed-width={imageScaledW}
+            data-untransformed-height={imageScaledH}
             style={{
               position: 'absolute',
               left: `${imageX}px`,
