@@ -538,14 +538,14 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
     <div
       ref={containerRef}
       id="image-render-card"
-      className="flex items-center justify-center relative"
+      className="flex items-center justify-center"
       style={{
-        width: '100%',
+        width: `${containerWidth}px`,
         maxWidth: `${containerWidth}px`,
         aspectRatio: responsiveDimensions.aspectRatio,
         maxHeight: 'calc(100vh - 200px)',
         backgroundColor: 'transparent',
-        padding: '24px',
+        padding: '0px',
       }}
     >
       <div
@@ -568,22 +568,26 @@ function CanvasRenderer({ image }: { image: HTMLImageElement }) {
             data-untransformed-height={imageScaledH}
             style={{
               position: 'absolute',
-              left: `${imageX}px`,
-              top: `${imageY}px`,
-              width: `${imageScaledW}px`,
-              height: `${imageScaledH}px`,
+              left: 0,
+              top: 0,
+              width: `${canvasW}px`,
+              height: `${canvasH}px`,
               perspective: `${perspective3D.perspective}px`,
               transformStyle: 'preserve-3d',
               zIndex: 15,
               pointerEvents: 'none',
+              overflow: 'visible',
             }}
           >
             <img
               src={image.src}
               alt="3D transformed"
               style={{
-                width: '100%',
-                height: '100%',
+                position: 'absolute',
+                left: `${imageX}px`,
+                top: `${imageY}px`,
+                width: `${imageScaledW}px`,
+                height: `${imageScaledH}px`,
                 objectFit: 'cover',
                 opacity: imageOpacity,
                 borderRadius:

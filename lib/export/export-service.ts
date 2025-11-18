@@ -1199,76 +1199,35 @@ export async function exportElement(
 
       if (has3DTransform) {
         try {
-          // Find the 3D transformed image overlay to get dimensions
-          const overlayContainer = element.querySelector('[data-3d-overlay="true"]') as HTMLElement;
+          // Find the parent container that holds both Konva Stage and 3D overlay
+          // This is the div with position: relative that contains everything
+          const parentContainer = element.querySelector('div[style*="position: relative"]') as HTMLElement;
 
-          // Add padding to the element before capture to avoid cut-off
-          const pad = 80; // px, adjust as needed for large transforms
-          element.style.boxSizing = 'content-box';
-          element.style.padding = `${pad}px`;
-          element.style.margin = `0px`;
-          element.style.background = 'transparent';
-          element.style.overflow = 'visible';
-          element.style.minWidth = `${options.exportWidth + pad * 2}px`;
-          element.style.minHeight = `${options.exportHeight + pad * 2}px`;
+          if (parentContainer) {
+            // Get the Konva stage dimensions (canvas dimensions)
+            const containerW = konvaStage.width();
+            const containerH = konvaStage.height();
 
-          if (overlayContainer) {
-            // Get the UNTRANSFORMED position from data attributes (single source of truth)
-            // These are the original positions before CSS 3D transforms were applied
-            const untransformedX = parseFloat(overlayContainer.dataset.untransformedX || '0');
-            const untransformedY = parseFloat(overlayContainer.dataset.untransformedY || '0');
-            const untransformedWidth = parseFloat(overlayContainer.dataset.untransformedWidth || '0');
-            const untransformedHeight = parseFloat(overlayContainer.dataset.untransformedHeight || '0');
+            // Calculate the scale needed to match export dimensions
+            const captureScale = Math.max(
+              (options.exportWidth * options.scale) / containerW,
+              (options.exportHeight * options.scale) / containerH
+            );
 
-            if (untransformedWidth > 0 && untransformedHeight > 0) {
-              // Capture 3D transform using modern-screenshot at display size
-              // Note: We'll scale it up to export dimensions afterwards
-              const transformedCanvas = await capture3DTransformWithModernScreenshot(
-                elementId,
-                1 // Capture at 1x scale first (display resolution)
-              );
+            // Capture the entire parent container (Konva + 3D overlay) at the correct scale
+            const transformedCanvas = await domToCanvas(parentContainer, {
+              scale: captureScale,
+              backgroundColor: null,
+            });
 
-              // Remove the padding after capture
-              element.style.padding = '';
-              element.style.minWidth = '';
-              element.style.minHeight = '';
-
-              // Get the Konva stage dimensions (container dimensions)
-              const containerW = konvaStage.width();
-              const containerH = konvaStage.height();
-
-              // Calculate scale from container to export dimensions
-              const scaleX = (options.exportWidth * options.scale) / containerW;
-              const scaleY = (options.exportHeight * options.scale) / containerH;
-
-              // Use the UNTRANSFORMED position (before CSS 3D transform)
-              // This ensures the exported position matches the preview exactly
-              const exportX = untransformedX * scaleX;
-              const exportY = untransformedY * scaleY;
-              const exportWidth = untransformedWidth * scaleX;
-              const exportHeight = untransformedHeight * scaleY;
-
-              // Composite the transformed canvas onto the Konva canvas
-              const compositeCtx = konvaCanvas.getContext('2d');
-              if (compositeCtx && transformedCanvas.width > 0 && transformedCanvas.height > 0) {
-                compositeCtx.imageSmoothingEnabled = true;
-                compositeCtx.imageSmoothingQuality = 'high';
-                compositeCtx.save();
-                compositeCtx.drawImage(
-                  transformedCanvas,
-                  0, 0, transformedCanvas.width, transformedCanvas.height,
-                  exportX, exportY, exportWidth, exportHeight
-                );
-                compositeCtx.restore();
-              }
+            // The captured canvas should now match the export dimensions
+            // and includes both the Konva background and the 3D transformed image
+            if (transformedCanvas.width > 0 && transformedCanvas.height > 0) {
+              konvaCanvas = transformedCanvas;
             }
           }
         } catch (error) {
-          // Remove the padding if an error occurs
-          element.style.padding = '';
-          element.style.minWidth = '';
-          element.style.minHeight = '';
-          console.warn('Failed to capture 3D transform with modern-screenshot, using Konva image instead:', error);
+          console.warn('Failed to capture 3D transform with modern-screenshot, using Konva canvas instead:', error);
           console.error('Error details:', error);
         }
       }
